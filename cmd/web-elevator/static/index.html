@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏢 엘리베이터 시뮬레이터</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🏢</span>
+                <h1>엘리베이터 시뮬레이터</h1>
+            </div>
+        </header>
+
+        <!-- Config Screen -->
+        <section id="config-screen" class="config-screen">
+            <div class="config-card">
+                <h2>⚙️ 설정</h2>
+                <form id="config-form">
+                    <div class="form-group">
+                        <label for="minFloor">최저 층</label>
+                        <input type="number" id="minFloor" value="-2" min="-10" max="0">
+                        <span class="hint">지하층은 음수로 입력 (예: B2 = -2)</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="maxFloor">최고 층</label>
+                        <input type="number" id="maxFloor" value="10" min="1" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="initialFloor">시작 층</label>
+                        <input type="number" id="initialFloor" value="1" min="-10" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="travelTime">층 이동 시간 (초)</label>
+                        <input type="number" id="travelTime" value="2" min="0.5" max="10" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="doorSpeed">문 열림/닫힘 속도 (초)</label>
+                        <input type="number" id="doorSpeed" value="1" min="0.5" max="5" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="doorOpenTime">문 열림 유지 시간 (초)</label>
+                        <input type="number" id="doorOpenTime" value="3" min="1" max="10" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="doorReopenTime">버튼 조작 후 문 열림 시간 (초)</label>
+                        <input type="number" id="doorReopenTime" value="1.5" min="0.5" max="5" step="0.5">
+                    </div>
+                    <button type="submit" class="btn-start">
+                        <span class="btn-icon">🚀</span>
+                        시작하기
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Simulation Screen -->
+        <section id="simulation-screen" class="simulation-screen hidden">
+            <div class="simulation-layout">
+                <!-- Building Visualization -->
+                <div class="building-section">
+                    <h3>🏢 건물</h3>
+                    <div class="building-wrapper">
+                        <div id="building" class="building">
+                            <!-- Floors will be generated dynamically -->
+                        </div>
+                        <div id="elevator-car" class="elevator-car">
+                            <div class="car-inner">
+                                <div class="car-door left"></div>
+                                <div class="car-door right"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div class="control-section">
+                    <!-- Status Display -->
+                    <div class="status-panel">
+                        <h3>📊 상태</h3>
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <span class="status-label">모드</span>
+                                <span id="status-mode" class="status-value mode-auto">Auto</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">방향</span>
+                                <span id="status-direction" class="status-value">
+                                    <span class="direction-icon">⏹</span>
+                                </span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">현재 층</span>
+                                <span id="status-floor" class="status-value floor-display">1F</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">문 상태</span>
+                                <span id="status-door" class="status-value">
+                                    <span class="door-icon">🚪</span> Closed
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floor Buttons -->
+                    <div class="floor-buttons-panel">
+                        <h3>🔢 층 선택</h3>
+                        <div id="floor-buttons" class="floor-buttons-grid">
+                            <!-- Floor buttons will be generated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="door-controls-panel">
+                        <h3>🚪 문 제어</h3>
+                        <div class="door-buttons">
+                            <button id="btn-open" class="btn-door btn-open">
+                                <span class="door-btn-icon">◀️ ▶️</span>
+                                <span>열림</span>
+                            </button>
+                            <button id="btn-close" class="btn-door btn-close">
+                                <span class="door-btn-icon">▶️ ◀️</span>
+                                <span>닫힘</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Weight Control -->
+                    <div class="weight-control-panel">
+                        <h3>⚖️ 중량 제어</h3>
+                        <div class="weight-control">
+                            <div class="weight-display">
+                                <span id="weight-value">0</span>
+                                <span class="weight-unit">kg</span>
+                                <span id="weight-max">/ 0kg</span>
+                            </div>
+                            <input type="range" id="weight-slider" min="0" max="2000" step="50" value="0"
+                                class="weight-slider">
+                            <div id="overload-indicator" class="overload-warning hidden">
+                                ⚠️ OVERLOAD (과적)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode & Actions -->
+                    <div class="actions-panel">
+                        <h3>⚡ 동작</h3>
+                        <div class="action-buttons">
+                            <select id="mode-select" class="mode-select">
+                                <option value="0">🤖 Auto</option>
+                                <option value="1">🔧 Manual</option>
+                                <option value="2">📦 Moving</option>
+                                <option value="3">🚨 Emergency</option>
+                            </select>
+                            <button id="btn-reset" class="btn-action btn-reset">
+                                🔄 리셋
+                            </button>
+                            <button id="btn-stop" class="btn-action btn-stop">
+                                ⏹ 정지
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Log -->
+            <div class="log-section">
+                <div class="log-header">
+                    <h3>📋 이벤트 로그</h3>
+                    <button id="btn-clear-log" class="btn-clear-log">🗑️ 지우기</button>
+                </div>
+                <div id="event-log" class="event-log">
+                    <div class="log-entry log-info">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-message">시뮬레이터가 준비되었습니다.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <button id="btn-back" class="btn-back">
+                ← 설정으로 돌아가기
+            </button>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
